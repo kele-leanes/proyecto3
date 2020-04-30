@@ -42,20 +42,22 @@ const claveSegura = 'delahila'
 
 let usuarios = [
     {
+        id : 1,
         usuario : 'Ezequiel',
-        contrasena : 'Password'
+        contrasena : 'Password',
+        mail : 'ezequiel@gmail.com'
     },
     {
+        id : 2,
         usuario : 'Martin',
-        contrasena : '12345678'
+        contrasena : '12345678',
+        mail : 'martin@gmail.com'
     }
 
 ]
 
 server.listen(3000, () => console.log('Servidor iniciado...'));
 
-
-server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
 server.use(cors());
 
@@ -90,8 +92,8 @@ function productValidator(req, res, next){
     }  
 };
 
-function userPassValidator(usuario, contrasena) {
-    const [filterUser] = usuarios.filter(element => element.usuario === usuario && element.contrasena === contrasena);
+function userPassValidator(mail, contrasena) {
+    const [filterUser] = usuarios.filter(element => element.mail === mail && element.contrasena === contrasena);
     if (!filterUser) {
         return false;
     }
@@ -109,26 +111,35 @@ function userAuthenticaton(req, res, next) {
     } catch (err) {
         res.json({ error: 'Error al validar el usuario'});
     }
-}
+};
+
+function newUserVerify(mail) {
+    const [userInvalid] = (usuarios.filter(element => element.mail === mail));
+    if(!userInvalid) {
+        return false;
+    }
+    return userInvalid   
+};
+    
 
 //Paths
 
 server.post('/login', allowCors, (req, res) => {
-    const { usuario, contrasena } = req.body;
-    const validated = userPassValidator(usuario, contrasena);
+    const { mail, contrasena } = req.body;
+    const validated = userPassValidator(mail, contrasena);
     if (!validated) {
         res.json({error: 'No existe el usuario o la contraseña es incorrecta'});
         return
     }
 
-    const token = jwt.sign({usuario}, claveSegura);
+    const token = jwt.sign({mail}, claveSegura);
 
     res.json({ token })
 
 });
 
 server.get('/auth', [userAuthenticaton, allowCors], (req, res) => {
-    res.send(`Esta es una página autenticada. Hola ${req.usuario.usuario} !`);
+    res.send(`Esta es una página autenticada. Hola ${req.usuario.mail} !`);
 })
 
 server.get('/productos', allowCors, (req, res) => {
@@ -157,6 +168,14 @@ server.get('/productos-favoritos', allowCors, (req, res) => {
     
 });
 
-/* server.post('/register' (req, res) => {
-
-}) */
+server.post('/register', allowCors, (req, res) => {
+    const { mail } = req.body
+    const validated = newUserVerify(mail);
+    console.log(validated);
+    if (!validated) {
+        usuarios.push(req.body);
+        res.json('El usuario se registró con éxito');
+    }else {
+        res.json({error: `El usuario: ${mail} ya existe`})
+    }    
+});
