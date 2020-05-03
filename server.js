@@ -45,21 +45,22 @@ let usuarios = [
         id : 1,
         usuario : 'Ezequiel',
         contrasena : 'Password',
-        mail : 'ezequiel@gmail.com'
+        mail : 'ezequiel@gmail.com',
+        is_admin: true
     },
     {
         id : 2,
         usuario : 'Martin',
         contrasena : '12345678',
-        mail : 'martin@gmail.com'
+        mail : 'martin@gmail.com',
+        is_admin: false
     }
 
 ]
 
 server.listen(3000, () => console.log('Servidor iniciado...'));
 
-server.use(bodyParser.json());
-server.use(cors());
+server.use(bodyParser.json(), cors());
 
 // Cors
 
@@ -132,7 +133,7 @@ server.post('/login', allowCors, (req, res) => {
         return
     }
 
-    const token = jwt.sign({mail}, claveSegura);
+    const token = jwt.sign({ mail }, claveSegura);
 
     res.json({ token })
 
