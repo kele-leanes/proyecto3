@@ -147,6 +147,12 @@ server.get('/productos', allowCors, (req, res) => {
     res.json(productos);
 });
 
+server.get('/productos/favoritos', allowCors, (req, res) => {
+    const favorites = productos.filter(elem => elem.isFavorite == true);
+    res.json(favorites);
+    
+});
+
 server.get('/productos/:idproducto', allowCors, (req, res) => {
     const idproducto = req.params.idproducto;
     if(idproducto > productos.length || idproducto == 0) {
@@ -158,12 +164,6 @@ server.get('/productos/:idproducto', allowCors, (req, res) => {
 server.post('/productos', [productValidator, allowCors], (req, res) => {
     productos.push(req.body);
     res.json(req.body);
-});
-
-server.get('/productos-favoritos', allowCors, (req, res) => {
-    const favorites = productos.filter(elem => elem.isFavorite == true);
-    res.json(favorites);
-    
 });
 
 server.post('/register', allowCors, (req, res) => {
