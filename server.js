@@ -157,26 +157,21 @@ server.get('/productos/:idproducto', allowCors, (req, res) => {
 
 server.post('/productos', [productValidator, allowCors], (req, res) => {
     productos.push(req.body);
-    console.log('El producto ha sido agregado con exito');
-    console.log(productos);
     res.json(req.body);
 });
 
 server.get('/productos-favoritos', allowCors, (req, res) => {
     const favorites = productos.filter(elem => elem.isFavorite == true);
-    console.log(favorites);
     res.json(favorites);
     
 });
 
 server.post('/register', allowCors, (req, res) => {
-    const { mail } = req.body
-    const validated = newUserVerify(mail);
-    console.log(validated);
+    const validated = newUserVerify(req.body.mail);
     if (!validated) {
         usuarios.push(req.body);
         res.json('El usuario se registró con éxito');
     }else {
-        res.json({error: `El usuario: ${mail} ya existe`})
-    }    
+        res.json({error: `El usuario: ${req.body.mail} ya existe`})
+    }
 });
