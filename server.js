@@ -35,6 +35,7 @@ function userAuthenticaton(req, res, next) {
     try {
         const token = req.headers.authorization.split(' ')[1];
         const verifyToken = jwt.verify(token, claveSegura);
+        console.log(verifyToken)
         if (verifyToken) {
             req.usuario = verifyToken;
             return next();
@@ -117,3 +118,18 @@ server.post('/productos', productValidator, (req, res) => {
         res.send('El producto se agregó con éxito');
     });
 });
+
+server.put('/productos/:idproducto', (req, res) => {
+    const idproducto = req.params.idproducto;
+    const { product_name, price, image_url, is_favorite } = req.body
+    sequelize.query(`UPDATE products SET product_name = '${product_name}', price = ${price}, image_url = '${image_url}', is_favorite = ${is_favorite} WHERE id = ${idproducto}`,
+    { type: sequelize.QueryTypes.UPDATE })
+    res.send('El producto se agregó con éxito');
+});
+
+server.delete('/productos/:idproducto', (req, res) => {
+    const idproducto = req.params.idproducto;
+    const query = `DELETE FROM products WHERE id = ${idproducto}`;
+    sequelize.query(query, { type: sequelize.QueryTypes.DELETE })
+    res.send('El producto se eliminó con éxito');
+})
