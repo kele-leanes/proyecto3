@@ -117,4 +117,3 @@ server.post('/productos', productValidator, (req, res) => {
         res.send('El producto se agregó con éxito');
     });
 });
-
