@@ -1,95 +1,25 @@
-/*Username: Sf4Xe2cR6N
-
-Database name: Sf4Xe2cR6N
-
-Password: PdOw1gkbVO
-
-Server: remotemysql.com
-
-Port: 3306*/
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const sequelize = require('./db/index')
 const server = express();
 
-let productos = [
-    {
-        id : 1,
-        nombre : 'Hamburguesa',
-        precio : 350,
-        url : '',
-        isFavorite : true
-    },
-    {
-        id : 2,
-        nombre : 'Lomito',
-        precio : 400,
-        url : '',
-        isFavorite : false
-    },
-    {
-        id : 3,
-        nombre : 'Papas Fritas',
-        precio : 200,
-        url : '',
-        isFavorite : true
-    }
-]
-
 const claveSegura = 'delahila'
-
-let usuarios = [
-    {
-        id : 1,
-        usuario : 'Ezequiel',
-        contrasena : 'Password',
-        mail : 'ezequiel@gmail.com',
-        is_admin: true
-    },
-    {
-        id : 2,
-        usuario : 'Martin',
-        contrasena : '12345678',
-        mail : 'martin@gmail.com',
-        is_admin: false
-    }
-
-]
 
 server.listen(3000, () => console.log('Servidor iniciado...'));
 
 server.use(bodyParser.json(), cors());
 
-// Cors
 
-function allowCors(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-};
-
-//Middlewares
+// MIDDLEWARES
 
 function productValidator(req, res, next){
-    if(req.body.id && req.body.nombre && req.body.precio && req.body.url){
-        let match = false;
-        productos.forEach(e => {
-            if(e.id == req.body.id){
-                match = true
-            }
-        });      
-        if(match) {
-            res.status(409).json('El id ya existe');
-        } else {
-            req.body.id = parseInt(req.body.id);
-            req.body.precio = parseInt(req.body.precio);
+    if(req.body.product_name && req.body.price && req.body.image_url) {
             req.body.isFavorite === 'true' ? req.body.isFavorite = true : req.body.isFavorite = false;
             next();
-        }       
-    } else {
-        res.status(400).json('Faltan parametros');
+        } else {
+        return res.status(400).json('Faltan parametros');
     }  
 };
 
@@ -123,9 +53,19 @@ function newUserVerify(mail) {
 };
     
 
-//Paths
+// USERS PATHS
 
-server.post('/login', allowCors, (req, res) => {
+server.post('/register', (req, res) => {
+    const validated = newUserVerify(req.body.mail);
+    if (!validated) {
+        usuarios.push(req.body);
+        res.json('El usuario se registró con éxito');
+    }else {
+        res.json({error: `El usuario: ${req.body.mail} ya existe`})
+    }    
+});
+
+server.post('/login', (req, res) => {
     const { mail, contrasena } = req.body;
     const validated = userPassValidator(mail, contrasena);
     if (!validated) {
@@ -139,39 +79,42 @@ server.post('/login', allowCors, (req, res) => {
 
 });
 
-server.get('/auth', [userAuthenticaton, allowCors], (req, res) => {
+server.get('/auth', userAuthenticaton,  (req, res) => {
     res.send(`Esta es una página autenticada. Hola ${req.usuario.mail} !`);
 })
+// PRODUCTS PATHS
 
-server.get('/productos', allowCors, (req, res) => {
-    res.json(productos);
+server.get('/productos', (req, res) => {
+    sequelize.query('SELECT * FROM products',
+    { type: sequelize.QueryTypes.SELECT }
+    ).then(function(productos){
+        res.json(productos);
+    });
+});    
+
+server.get('/productos/favoritos', (req, res) => {
+    sequelize.query(`SELECT * FROM products WHERE is_favorite = TRUE`,
+    { type: sequelize.QueryTypes.SELECT }
+    ).then(function(productos){
+        res.json(productos);
+    });;
 });
 
-server.get('/productos/:idproducto', allowCors, (req, res) => {
+server.get('/productos/:idproducto', (req, res) => {
     const idproducto = req.params.idproducto;
-    if(idproducto > productos.length || idproducto == 0) {
-        return res.status(404).send('Artículo no encontrado');
-    }
-    res.json(productos[idproducto-1]);
+    sequelize.query(`SELECT * FROM products WHERE id = ${idproducto}`,
+    { type: sequelize.QueryTypes.SELECT }
+    ).then(function(producto){
+        res.json(producto);
+    });;
 });
 
-server.post('/productos', [productValidator, allowCors], (req, res) => {
-    productos.push(req.body);
-    res.json(req.body);
+server.post('/productos', productValidator, (req, res) => {
+    const { product_name, price, image_url, is_favorite } = req.body
+    const query = `INSERT INTO products VALUES (NULL,'${product_name}',${price},'${image_url}',${is_favorite})`
+    sequelize.query(query, { type: sequelize.QueryTypes.INSERT }
+    ).then(function(producto){
+        res.send('El producto se agregó con éxito');
+    });
 });
 
-server.get('/productos-favoritos', allowCors, (req, res) => {
-    const favorites = productos.filter(elem => elem.isFavorite == true);
-    res.json(favorites);
-    
-});
-
-server.post('/register', allowCors, (req, res) => {
-    const validated = newUserVerify(req.body.mail);
-    if (!validated) {
-        usuarios.push(req.body);
-        res.json('El usuario se registró con éxito');
-    }else {
-        res.json({error: `El usuario: ${req.body.mail} ya existe`})
-    }    
-});
