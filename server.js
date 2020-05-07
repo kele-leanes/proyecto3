@@ -52,28 +52,27 @@ function userAuthenticaton(req, res, next) {
     }
 };
 
-function newUserVerify(user) {
-    const validUser = sequelize.query(`SELECT * FROM users WHERE username = '${user}'`,
-    { type: sequelize.QueryTypes.SELECT });
-    if(validUser == []) {
-        return true;
-    }
-    return false   
+async function newUserVerify(req, res, next) {
+    try {
+        const existingUser = await sequelize.query(`SELECT * FROM users WHERE username = '${req.body.username}'`,
+        { type: sequelize.QueryTypes.SELECT });
+        if(!existingUser.length) {
+            next();
+        } else {
+            res.status(409).json("El usuario ya existe");
+        }
+    } catch (err) {
+        next(new Error(err));
+      }
 };
     
 
 // USERS PATHS
 
-server.post('/registrarse', (req, res) => {
-    const { username, password, first_name, last_name, mail, phone_number, address } = req.body;
-    const validated = newUserVerify(username);
-    if (validated) {
-        sequelize.query(`INSERT INTO users (username, password, first_name, last_name, mail, phone_number, address, is_admin) 
-        VALUES ('${username}','${password}','${first_name}','${last_name}','${mail}',${phone_number},'${address}', false)`)
-        res.json('El usuario se registró con éxito');
-    }else {
-        res.json({error: `El usuario: ${req.body.username} ya existe`})
-    }    
+server.post('/registrarse', newUserVerify, (req, res) => {
+    sequelize.query(`${insertQuery('INSERT','users',req.body)}`,
+    replacementsQuery(req.body))
+    res.json('El usuario se registró con éxito');    
 });
 
 server.post('/login', userPassValidator, (req, res) => {
@@ -177,7 +176,9 @@ server.put('/productos/:idproducto',userAuthenticaton, (req, res) => {
 
 // QUERYS CREATORS    
 function updateQuery(method, table , body, id){
-    const query = `${method} ${table} SET ${Object.keys(body).map(body => body + ' = ?').toString()} WHERE id = ${id}`
+    const query = `${method} ${table} SET 
+    ${Object.keys(body).map(body => body + ' = ?').toString()} 
+    WHERE id = ${id}`
     return query
 }
 
@@ -186,4 +187,11 @@ function replacementsQuery(body) {
         replacements: Object.values(body)
     }
     return replace
+}
+
+function insertQuery(method, table, body){
+    const query = `${method} INTO ${table} (
+        ${Object.keys(body).map(body => body).toString()}) VALUES (
+            ${Object.keys(body).map(() => '?').toString()})`
+    return query
 }
