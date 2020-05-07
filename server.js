@@ -23,13 +23,13 @@ function productValidator(req, res, next){
 
 async function userPassValidator(req, res, next) {
     const { username, password } = req.body;
-    const query = `SELECT id, username, first_name, last_name, mail, phone_number, address, is_admin FROM users WHERE username = '${username}' AND password = '${password}'`
+    const query = `SELECT id, username, is_admin FROM users WHERE username = '${username}' AND password = '${password}'`
     const dbUser = await sequelize.query(query, { type: sequelize.QueryTypes.SELECT })
     const foundUser = dbUser[0];
     try {
         const { username, is_admin } = foundUser; 
         const token = jwt.sign({username, is_admin}, claveSegura, {expiresIn: "15m"});
-        res.json({token})
+        res.json(token)
         next();
     } catch {
         res.json({error: 'No existe el usuario o la contraseña es incorrecta'});
@@ -52,82 +52,146 @@ function userAuthenticaton(req, res, next) {
     }
 };
 
-function newUserVerify(mail) {
-    const [userInvalid] = (usuarios.filter(element => element.mail === mail));
-    if(!userInvalid) {
-        return false;
-    }
-    return userInvalid   
+async function newUserVerify(req, res, next) {
+    try {
+        const existingUser = await sequelize.query(`SELECT * FROM users WHERE username = '${req.body.username}'`,
+        { type: sequelize.QueryTypes.SELECT });
+        if(!existingUser.length) {
+            next();
+        } else {
+            res.status(409).json("El usuario ya existe");
+        }
+    } catch (err) {
+        next(new Error(err));
+      }
 };
     
 
 // USERS PATHS
 
-server.post('/register', (req, res) => {
-    const validated = newUserVerify(req.body.mail);
-    if (!validated) {
-        usuarios.push(req.body);
-        res.json('El usuario se registró con éxito');
-    }else {
-        res.json({error: `El usuario: ${req.body.mail} ya existe`})
-    }    
+server.post('/registrarse', newUserVerify, (req, res) => {
+    sequelize.query(`${insertQuery('INSERT','users',req.body)}`,
+    replacementsQuery(req.body))
+    res.json('El usuario se registró con éxito');    
 });
 
 server.post('/login', userPassValidator, (req, res) => {
-    res.json('Sesion iniciada');
 });
 
+server.get('/usuarios', userAuthenticaton, (req, res) => {
+    if(req.usuario.is_admin) {
+        sequelize.query('SELECT * FROM users',
+        { type: sequelize.QueryTypes.SELECT }
+    )   .then(users => res.status(200).json(users));
+    } else {
+        res.status(409).json('No estas autorizado')
+    }    
+})
+
+server.get('/usuarios/:idusuario', userAuthenticaton, (req, res) => {
+    if(req.usuario.is_admin) {
+        const idusuario = req.params.idusuario;
+        sequelize.query(`SELECT * FROM users WHERE id = ${idusuario}`,
+        { type: sequelize.QueryTypes.SELECT }
+        ).then(user => res.status(200).json(user));;
+    } else {
+        res.status(409).json('No estas autorizado')
+    }      
+});
+
+server.delete('/usuarios/:idusuario', userAuthenticaton, (req, res) => {
+    if(req.usuario.is_admin){  
+        const idusuario = req.params.idusuario;
+        const query = `DELETE FROM users WHERE id = ${idusuario}`;
+        sequelize.query(query)
+        .then(() => res.status(200).json(`El usuario se eliminó con éxito`))
+    } else {
+        res.status(409).json('No estas autorizado')
+    }      
+})
+
+server.put('/usuarios/:idusuario',userAuthenticaton, (req, res) => {
+    if(req.usuario.is_admin){    
+        const idusuario = req.params.idusuario;
+        sequelize.query(`${updateQuery('UPDATE','users',req.body,idusuario)}`, 
+        replacementsQuery(req.body))
+        .then(() => res.status(200).json('El usuario se actualizó con éxito')); 
+    } else {
+        res.status(409).json('No estas autorizado')
+    }    
+});
 // PRODUCTS PATHS
 
 server.get('/productos', (req, res) => {
     sequelize.query('SELECT * FROM products',
     { type: sequelize.QueryTypes.SELECT }
-    ).then(function(productos){
-        res.json(productos);
-    });
+    ).then(products => res.status(200).json(products));
 });    
 
 server.get('/productos/favoritos', (req, res) => {
     sequelize.query(`SELECT * FROM products WHERE is_favorite = TRUE`,
     { type: sequelize.QueryTypes.SELECT }
-    ).then(function(productos){
-        res.json(productos);
-    });;
+    ).then(products => res.status(200).json(products));
 });
 
 server.get('/productos/:idproducto', (req, res) => {
     const idproducto = req.params.idproducto;
     sequelize.query(`SELECT * FROM products WHERE id = ${idproducto}`,
     { type: sequelize.QueryTypes.SELECT }
-    ).then(function(producto){
-        res.json(producto);
-    });;
+    ).then(product => res.status(200).json(product));;
 });
 
 server.post('/productos', [productValidator, userAuthenticaton], (req, res) => {
     if(req.usuario.is_admin) {
         const { product_name, price, image_url, is_favorite } = req.body
         const query = `INSERT INTO products VALUES (NULL,'${product_name}',${price},'${image_url}',${is_favorite})`
-        sequelize.query(query, { type: sequelize.QueryTypes.INSERT }
-        ).then(function(producto){
-            res.send('El producto se agregó con éxito');
-        });
+        sequelize.query(query)
+        .then(product => res.status(200).json(`El producto ${product} se agregó con éxito`))
     } else {
         res.status(409).send('No tienes permiso');
     }    
 });
 
-server.put('/productos/:idproducto', userAuthenticaton, (req, res) => {
-    const idproducto = req.params.idproducto;
-    const { product_name, price, image_url, is_favorite } = req.body
-    sequelize.query(`UPDATE products SET product_name = '${product_name}', price = ${price}, image_url = '${image_url}', is_favorite = ${is_favorite} WHERE id = ${idproducto}`,
-    { type: sequelize.QueryTypes.UPDATE })
-    res.send('El producto se agregó con éxito');
+server.delete('/productos/:idproducto', userAuthenticaton, (req, res) => {
+    if(req.usuario.is_admin){  
+        const idproducto = req.params.idproducto;
+        const query = `DELETE FROM products WHERE id = ${idproducto}`;
+        sequelize.query(query)
+        .then(product => res.status(200).json(`El producto ${product} se eliminó con éxito`))
+    } else {
+        res.status(409).json('No estas autorizado')
+    }      
+})
+
+server.put('/productos/:idproducto',userAuthenticaton, (req, res) => {
+    if(req.usuario.is_admin){    
+        const idproducto = req.params.idproducto;
+        sequelize.query(`${updateQuery('UPDATE','products',req.body,idproducto)}`, 
+        replacementsQuery(req.body))
+        .then(() => res.status(200).json('El producto se actualizó con éxito')); 
+    } else {
+        res.status(409).json('No estas autorizado')
+    }    
 });
 
-server.delete('/productos/:idproducto', userAuthenticaton, (req, res) => {
-    const idproducto = req.params.idproducto;
-    const query = `DELETE FROM products WHERE id = ${idproducto}`;
-    sequelize.query(query, { type: sequelize.QueryTypes.DELETE })
-    res.send('El producto se eliminó con éxito');
-})
+// QUERYS CREATORS    
+function updateQuery(method, table , body, id){
+    const query = `${method} ${table} SET 
+    ${Object.keys(body).map(body => body + ' = ?').toString()} 
+    WHERE id = ${id}`
+    return query
+}
+
+function replacementsQuery(body) {
+    const replace = {
+        replacements: Object.values(body)
+    }
+    return replace
+}
+
+function insertQuery(method, table, body){
+    const query = `${method} INTO ${table} (
+        ${Object.keys(body).map(body => body).toString()}) VALUES (
+            ${Object.keys(body).map(() => '?').toString()})`
+    return query
+}
