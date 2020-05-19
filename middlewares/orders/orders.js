@@ -1,69 +1,7 @@
-const jwt = require('jsonwebtoken');
-const sequelize = require('./../db');
-const { updateQuery, replacementsQuery } = require('./../extras');
+const sequelize = require('./../../db');
+const { findProductById } = require('./../products/products')
+const { updateQuery, replacementsQuery } = require('./../../extras');
 
-const claveSegura = 'delahila';
-
-function productValidator(req, res, next){
-    if(req.body.product_name && req.body.price && req.body.image_url) {
-            next();
-        } else {
-        return res.status(400).json('Faltan parametros');
-    }  
-};
-
-async function userPassValidator(req, res, next) {
-    const { username, password } = req.body;
-    const query = `SELECT user_id, username, is_admin FROM users WHERE username = '${username}' AND password = '${password}'`
-    const dbUser = await sequelize.query(query, { type: sequelize.QueryTypes.SELECT })
-    const foundUser = dbUser[0];
-    try {
-        const { username, is_admin, user_id } = foundUser; 
-        const token = jwt.sign({ username, is_admin, user_id }, claveSegura, {expiresIn: "15m"});
-        res.json(token)
-        next();
-    } catch {
-        res.json({error: 'No existe el usuario o la contraseña es incorrecta'});
-    }
-};
-
-function userAuthenticaton(req, res, next) {
-    try {
-        const token = req.headers.authorization.split(' ')[1];
-        const verifyToken = jwt.verify(token, claveSegura);
-        if (verifyToken.is_admin) {
-            req.usuario = verifyToken;
-            return next();
-        } else {
-            req.usuario = verifyToken;
-            return next();
-        }
-    } catch (err) {
-        res.json({ error: 'Error al validar el usuario'});
-    }
-};
-
-async function newUserVerify(req, res, next) {
-    try {
-        const existingUser = await sequelize.query(`SELECT * FROM users WHERE username = '${req.body.username}'`,
-        { type: sequelize.QueryTypes.SELECT });
-        if(!existingUser.length) {
-            next();
-        } else {
-            res.status(409).json("El usuario ya existe");
-        }
-    } catch (err) {
-        next(new Error(err));
-      }
-};
-
-async function findProductById(id) {
-    const [dbProduct] = await sequelize.query(`SELECT * FROM products WHERE product_id = ${id}`, { raw: true });
-    const foundProduct = await dbProduct.find(
-      (element) => element.product_id === id
-    );
-    return foundProduct;
-}
 
 async function deleteOrder(req, res, next) {
     const id = req.params.idorder;
@@ -78,6 +16,7 @@ async function deleteOrder(req, res, next) {
         return res.status(404).json(`Algo salió mal. Error: ${err}`);
     }
 }
+
 
 async function UpdateStatus(req, res, next) {
     const id = req.params.idorder;
@@ -148,7 +87,7 @@ async function findProductPrice(product) {
 async function createOrderRelationship(orderId, products) {
     products.forEach(async (product) => {
         const { productId, quantity } = product;
-        await sequelize.query(`INSERT INTO product_order (order_id, product_id, product_qty ) 
+        await sequelize.query(`INSERT INTO product_order (order_id, product_id, product_qty) 
         VALUES (${orderId}, ${productId}, ${quantity})`, { raw: true });
     });
     return true;
@@ -207,13 +146,9 @@ async function completeDesc(orderInfo) {
 }
 
 module.exports = {
-    productValidator,
-    userPassValidator,
-    userAuthenticaton,
-    newUserVerify,
     deleteOrder,
     UpdateStatus,
     addOrder,
     listOrders,
-    listOrdersById
+    listOrdersById,    
 };
