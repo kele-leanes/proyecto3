@@ -1,5 +1,5 @@
 const sequelize = require('./../../db');
-const { findProductById } = require('./../products/products')
+const { findProductById }  = require('./../products/products')
 const { updateQuery, replacementsQuery } = require('./../../extras');
 
 
@@ -78,17 +78,18 @@ async function obtainOrderPrice(products) {
   }
 
 async function findProductPrice(product) {
-    const { productId, quantity } = product;
-    const productPrice = (await findProductById(productId)).price;
-    const subtotal = `${+productPrice * +quantity}`;
+    console.log(product)
+    const { product_id, product_qty } = product;
+    const productPrice = (await findProductById(product_id)).price;
+    const subtotal = `${+productPrice * +product_qty}`;
     return subtotal;
 }  
 
 async function createOrderRelationship(orderId, products) {
     products.forEach(async (product) => {
-        const { productId, quantity } = product;
+        const { product_id, product_qty } = product;
         await sequelize.query(`INSERT INTO product_order (order_id, product_id, product_qty) 
-        VALUES (${orderId}, ${productId}, ${quantity})`, { raw: true });
+        VALUES (${orderId}, ${product_id}, ${product_qty})`, { raw: true });
     });
     return true;
 }

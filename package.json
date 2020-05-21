@@ -2,11 +2,12 @@
   "name": "proyecto3",
   "version": "1.0.0",
   "description": "Proyecto 3 Acamica",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
+    "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Ezequiel Leanes",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",

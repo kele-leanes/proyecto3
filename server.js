@@ -100,7 +100,7 @@ server.get('/orders/:idorder', [userAuthenticaton,listOrdersById], (req, res) =>
     res.status(200).json(req.ordersList)
 })    
 
-server.post('/orders/', [userAuthenticaton,addOrder], (req, res) => {
+server.post('/orders', [userAuthenticaton,addOrder], (req, res) => {
     res.status(200).json(req.createdOrder);
 })
 
