@@ -36,6 +36,10 @@ server.listen(3000, () => console.log('Servidor iniciado...'));
 
 server.use(bodyParser.json(), cors());
 
+server.get('/', (req, res) => {
+    res.status(200).json("API Delilah Restó")
+})
+
 
 // USERS PATHS
 
