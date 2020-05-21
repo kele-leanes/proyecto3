@@ -32,7 +32,7 @@ const {
     } = require('./middlewares/products/products')
 
 
-server.listen(3000, () => console.log('Servidor iniciado...'));
+server.listen(process.env.PORT || 3000, () => console.log('Servidor iniciado...'));
 
 server.use(bodyParser.json(), cors());
 
