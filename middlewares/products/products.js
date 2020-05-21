@@ -73,6 +73,7 @@ async function UpdateProduct(req, res, next) {
 }
 
 module.exports = {
+    findProductById,
     productValidator,
     getProducts,
     getFavorites,

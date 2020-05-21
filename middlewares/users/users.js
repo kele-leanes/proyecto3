@@ -11,7 +11,7 @@ async function userPassValidator(req, res, next) {
     const foundUser = dbUser[0];
     try {
         const { username, is_admin, user_id } = foundUser; 
-        req.token = jwt.sign({ username, is_admin, user_id }, claveSegura, {expiresIn: "15m"});
+        req.token = jwt.sign({ username, is_admin, user_id }, claveSegura, {expiresIn: "30m"});
         return next();
     } catch {
         res.json({error: 'No existe el usuario o la contraseña es incorrecta'});
