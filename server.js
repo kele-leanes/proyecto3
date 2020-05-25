@@ -96,22 +96,22 @@ server.put('/productos/:idproducto', [userAuthenticaton,UpdateProduct], (req, re
 
 //ORDER PATHS
 
-server.get('/orders', [userAuthenticaton,listOrders], (req, res) => {
+server.get('/ordenes', [userAuthenticaton,listOrders], (req, res) => {
     res.status(200).json(req.ordersList)
 })
 
-server.get('/orders/:idorder', [userAuthenticaton,listOrdersById], (req, res) => {
+server.get('/ordenes/:idorder', [userAuthenticaton,listOrdersById], (req, res) => {
     res.status(200).json(req.ordersList)
 })    
 
-server.post('/orders', [userAuthenticaton,addOrder], (req, res) => {
+server.post('/ordenes', [userAuthenticaton,addOrder], (req, res) => {
     res.status(200).json(req.createdOrder);
 })
 
-server.delete('/orders/:idorder', [userAuthenticaton,deleteOrder], (req, res) => {
+server.delete('/ordenes/:idorder', [userAuthenticaton,deleteOrder], (req, res) => {
     res.status(200).json('Orden eliminada')
 })    
 
-server.put('/orders/:idorder', [userAuthenticaton,UpdateStatus], (req, res) => {
+server.put('/ordenes/:idorder', [userAuthenticaton,UpdateStatus], (req, res) => {
     res.status(200).json('Orden actualizada')
 })    
