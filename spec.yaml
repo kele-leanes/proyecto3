@@ -1,0 +1,635 @@
+openapi: 3.0.0
+info:
+  title: API Delilah Restó
+  version: '1.0'
+  description: API de administración de pedidos
+  contact:
+    name: Ezequiel Leanes
+    email: ezequiel.leanes@gmail.com
+    url: 'https://github.com/kele-leanes'
+servers:
+  - description: ''
+    url: 'https://delilah-resto-acamica.herokuapp.com'
+paths:
+  '/usuarios/{id}':
+    get:
+      summary: GET Usuario
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    user_id:
+                      type: number
+                    username:
+                      type: string
+                    password:
+                      type: string
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                    mail:
+                      type: string
+                    phone_number:
+                      type: number
+                    address:
+                      type: string
+                    is_admin:
+                      type: boolean
+              examples: {}
+        '401':
+          description: Unauthorized
+          headers: {}
+      operationId: get-usuario-id
+      description: User information by ID
+      security:
+        - JWT: []
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          description: Valid Token
+          required: true
+      tags:
+        - Users
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    put:
+      summary: PUT Usuarios
+      operationId: put-usuarios
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+      description: Update User
+      security:
+        - JWT: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                username:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                password:
+                  type: string
+                mail:
+                  type: string
+                phone_number:
+                  type: number
+                address:
+                  type: string
+                is_admin:
+                  type: boolean
+      tags:
+        - Users
+    delete:
+      summary: DELETE User
+      operationId: delete-usuarios-id
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+      description: Delete User
+      security:
+        - JWT: []
+      parameters: []
+      tags:
+        - Users
+  /usuarios:
+    get:
+      summary: GET Users
+      tags:
+        - Users
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    user_id:
+                      type: integer
+                    username:
+                      type: string
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                    password:
+                      type: string
+                    mail:
+                      type: string
+                    phone_number:
+                      type: number
+                    address:
+                      type: string
+                    is_admin:
+                      type: boolean
+              examples: {}
+            application/xml:
+              schema:
+                type: object
+                properties: {}
+      operationId: get-usuarios
+      description: Get all users information
+      security:
+        - JWT: []
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+          required: true
+  /productos:
+    get:
+      summary: GET Products
+      tags:
+        - Products
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    product_id:
+                      type: integer
+                    product_name:
+                      type: string
+                    price:
+                      type: number
+                    image_url:
+                      type: string
+                    is_favorite:
+                      type: boolean
+              examples:
+                Example:
+                  value:
+                    product_id: 1
+                    product_name: Hamburguesa
+                    price: 350
+                    image_url: 'https://bit.ly/2YLUqHo'
+                    is_favorite: 1
+      operationId: get-productos
+      description: Get all Products
+    post:
+      summary: POST Producto
+      operationId: post-productos
+      responses:
+        '200':
+          description: OK
+      description: Add product to database
+      security:
+        - JWT: []
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_name:
+                  type: string
+                price:
+                  type: number
+                image_url:
+                  type: string
+                is_favorite:
+                  type: boolean
+            examples:
+              Example:
+                value:
+                  product_name: Hamburguesa
+                  price: 350
+                  image_url: 'https://bit.ly/2YLUqHo'
+                  is_favorite: 1
+      tags:
+        - Products
+  '/productos/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: GET Producto
+      tags:
+        - Products
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    product_id:
+                      type: integer
+                    product_name:
+                      type: string
+                    price:
+                      type: number
+                    image_url:
+                      type: string
+                    is_favorite:
+                      type: boolean
+              examples:
+                Example:
+                  value:
+                    product_id: 1
+                    product_name: Hamburguesa
+                    price: 350
+                    image_url: 'https://bit.ly/2YLUqHo'
+                    is_favorite: 1
+      operationId: get-productos-id
+      description: Get product by Id
+    put:
+      summary: PUT Producto
+      operationId: put-productos-id
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+      description: Update product info
+      security:
+        - JWT: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_name:
+                  type: string
+                price:
+                  type: number
+                image_url:
+                  type: string
+                is_favorite:
+                  type: boolean
+      tags:
+        - Products
+    delete:
+      summary: DELETE Producto
+      operationId: delete-productos-id
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+      description: Delete product by id
+      security:
+        - JWT: []
+      tags:
+        - Products
+  /productos/favoritos:
+    get:
+      summary: GET Productos Favoritos
+      tags:
+        - Products
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    product_id:
+                      type: integer
+                    product_name:
+                      type: string
+                    price:
+                      type: number
+                    'image:url':
+                      type: string
+                    is_favorite:
+                      type: boolean
+      operationId: get-productos-favoritos
+      description: Get All Favorites Products
+  /registrarse:
+    post:
+      summary: POST Usuario
+      operationId: post-new-user
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Faltan parametros
+        '409':
+          description: El usuario ya existe
+      description: Post a new user
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                username:
+                  type: string
+                password:
+                  type: string
+                phone_number:
+                  type: number
+                mail:
+                  type: string
+                address:
+                  type: string
+            examples:
+              Example:
+                value:
+                  username: kele
+                  password: '123456'
+                  first_name: Ezequiel
+                  last_name: Leanes
+                  mail: ezequiel.leanes@gmail.com
+                  phone_number: 154546323
+                  address: Rodriguez 1324
+        description: User information
+      tags:
+        - Users
+    parameters: []
+  /login:
+    post:
+      summary: POST Usuario login
+      operationId: post-login
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Token:
+                    type: string
+              examples:
+                Token:
+                  value:
+                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImtlbGUiLCJpc19hZG1pbiI6MSwidXNlcl9pZCI6MSwiaWF0IjoxNTkwMzY5Mzc0LCJleHAiOjE1OTAzNzExNzR9.tOwR0Mbej_Vebon4F5NxUG516lnFx_5MMqfXpOO_NL0
+        '404':
+          description: No existe el usuario o la contraseña es incorrecta.
+      description: User login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+            examples:
+              Login Exaple:
+                value:
+                  username: kele
+                  password: '123456'
+      tags:
+        - Users
+  /ordenes:
+    get:
+      summary: GET Ordenes
+      tags:
+        - Orders
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    order_id:
+                      type: integer
+                    order_status:
+                      type: string
+                    order_amout:
+                      type: number
+                    payment_method:
+                      type: string
+                    user_id:
+                      type: number
+                    username:
+                      type: string
+                    password:
+                      type: string
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                    mail:
+                      type: string
+                    phone_number:
+                      type: number
+                    address:
+                      type: string
+                    is_admin:
+                      type: boolean
+                    products:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          product_qty:
+                            type: integer
+                          product_id:
+                            type: integer
+                          product_name:
+                            type: string
+                          price:
+                            type: number
+                          image_url:
+                            type: string
+                          is_favorite:
+                            type: boolean
+              examples: {}
+        '401':
+          description: Unauthorized
+      operationId: get-ordenes
+      description: Get all orders
+      security:
+        - JWT: []
+    post:
+      summary: POST Ordenes
+      operationId: post-ordenes
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: {}
+      description: Post new order
+      security:
+        - JWT: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                products:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      product_id:
+                        type: integer
+                      product_qty:
+                        type: number
+                payment_method:
+                  type: string
+      tags:
+        - Orders
+  '/ordenes/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: GET Orden
+      tags:
+        - Orders
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_id:
+                    type: integer
+                  order_status:
+                    type: string
+                  order_amout:
+                    type: number
+                  payment_method:
+                    type: string
+                  user_id:
+                    type: number
+                  username:
+                    type: string
+                  password:
+                    type: string
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  mail:
+                    type: string
+                  phone_number:
+                    type: number
+                  address:
+                    type: string
+                  is_admin:
+                    type: boolean
+                  products:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        product_qty:
+                          type: integer
+                        product_id:
+                          type: integer
+                        product_name:
+                          type: string
+                        price:
+                          type: number
+                        image_url:
+                          type: string
+                        is_favorite:
+                          type: boolean
+        '401':
+          description: Unauthorized
+      operationId: get-ordenes-id
+      description: Get order by id
+      security:
+        - JWT: []
+    put:
+      summary: PUT Ordenes
+      operationId: put-ordenes-id
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+      description: Update order by id
+      security:
+        - JWT: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order_status:
+                  type: string
+      tags:
+        - Orders
+    delete:
+      summary: Delete Ordenes
+      operationId: delete-ordenes-id
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+      description: Delete order by id
+      security:
+        - JWT: []
+      tags:
+        - Orders
+components:
+  schemas: {}
+  securitySchemes:
+    JWT:
+      type: http
+      scheme: basic
