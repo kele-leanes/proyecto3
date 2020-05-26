@@ -5,6 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node .",
+    "createdb": "node db/setup/install.js",
+    "seeddb": "node db/setup/seed/seeder.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Ezequiel Leanes",
@@ -12,10 +14,11 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
+    "csv-parser": "^2.3.2",
     "express": "^4.17.1",
+    "file-system": "^2.2.2",
     "jsonwebtoken": "^8.5.1",
     "mysql2": "^2.1.0",
-    "nodemon": "^2.0.3",
     "sequelize": "^5.21.7"
   }
 }
