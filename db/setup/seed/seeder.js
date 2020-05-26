@@ -2,20 +2,21 @@ const csv = require('csv-parser')
 const fs = require('fs')
 const sequelize = require('../../index')
 const { insertQuery, replacementsQuery } = require('../../../extras/index')
-const results = [];
+const arrUsers = [];
+const arrProducts = [];
 
-fs.createReadStream('users.csv')
+fs.createReadStream('./db/setup/seed/users.csv')
   .pipe(csv())
-  .on('data', (data) => results.push(data))
+  .on('data', (data) => arrUsers.push(data))
   .on('end', () => {
-    results.forEach(async (results) => await sequelize.query(`${insertQuery('INSERT', 'users', results)}`,
-    replacementsQuery(results)));
+    arrUsers.forEach(async (user) => await sequelize.query(`${insertQuery('INSERT', 'users', user)}`,
+    replacementsQuery(user)));
   });
 
-fs.createReadStream('products.csv')
+fs.createReadStream('./db/setup/seed/products.csv')
 .pipe(csv())
-.on('data', (data) => results.push(data))
+.on('data', (data) => arrProducts.push(data))
 .on('end', () => {
-results.forEach(async (results) => await sequelize.query(`${insertQuery('INSERT', 'products', results)}`,
-replacementsQuery(results)));
+arrProducts.forEach(async (product) => await sequelize.query(`${insertQuery('INSERT', 'products', product)}`,
+replacementsQuery(product)));
 });  

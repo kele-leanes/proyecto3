@@ -2,6 +2,8 @@
 
 API de administración de pedidos
 
+[Deploy URL](https://delilah-resto-acamica.herokuapp.com)
+
 ## Para empezar
 
 Clonar o descargar el repositorio:
@@ -25,18 +27,18 @@ Configurar base de datos:
 
 Creación de tablas:
 ```
-$ npm createdb
+$ npm run createdb
 ```
 
 Popular base de datos:
 ```
-$ npm seeddb
+$ npm run seeddb
 ```
 
 ### Iniciar API
 
 ```
-$ npm start
+$ npm run start
 ```
 ## Documentación
 
